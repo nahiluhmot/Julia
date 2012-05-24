@@ -1,18 +1,19 @@
-
-import Data.Complex 
-import Control.Parallel (par)
+import Data.Complex (Complex(..), realPart, imagPart)
 
 
-coordinateToComplex w h x y = (((x * 4) / w) - 2) :+
-                              (((y * 4) / h) - 2)
+toPoint :: Fractional a => Int -> Int -> a
+toPoint s n = (((fromIntegral n * 4) / fromIntegral s) - 2)
 
+escapes :: RealFloat a => Complex a -> Complex a -> Int -> Int
 escapes c j it = length ys
-      where xs = take it $ iterate (\z -> z ^ 2 + j) c
-            ys = takeWhile (\x -> ((abs realPart x) < 2.0)  && 
-                                  ((abs imagPart x) < 2.0)) xs
+    where xs = take it . iterate (\z -> z ^ 2 + j) $ c
+          ys = takeWhile bounded xs
+          bounded x = (abs . realPart $ x) < 2.0 && 
+                      (abs . imagPart $ x) < 2.0
 
-generate j w h it = map (\x -> 
-                        map (\y -> 
-                            escapes j (coordinateToComplex w h x y) it)
-                            [0..h])
-                        [0..w]  
+generate :: RealFloat a => Complex a -> Int -> Int -> [[Int]]
+generate j s it = 
+    [[escapes (toPoint s x :+ toPoint s y) j it 
+        | y <- [0 .. s]] 
+            | x <- [0 .. s]]
+     
