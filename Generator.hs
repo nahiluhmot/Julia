@@ -1,14 +1,15 @@
+module Generator (generate) where
+
 import Data.Complex (Complex(..), realPart, imagPart)
 
-
 toPoint :: Fractional a => Int -> Int -> a
-toPoint s n = (((fromIntegral n * 4) / fromIntegral s) - 2)
+toPoint s n = ((fromIntegral n * 4) / fromIntegral s) - 2
 
 escapes :: RealFloat a => Complex a -> Complex a -> Int -> Int
 escapes c j it = length ys
     where xs = take it . iterate (\z -> z ^ 2 + j) $ c
-          ys = takeWhile bounded xs
-          bounded x = (abs . realPart $ x) < 2.0 && 
+          ys = takeWhile trapped xs
+          trapped x = (abs . realPart $ x) < 2.0 && 
                       (abs . imagPart $ x) < 2.0
 
 generate :: RealFloat a => Complex a -> Int -> Int -> [[Int]]
