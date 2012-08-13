@@ -1,17 +1,17 @@
 import Generator (generate)
 import System (getArgs)
 import Data.Complex (Complex((:+)))
-import Graphics.GD (newImage, setPixel, savePngFile, Image, Color)
-import Control.Monad (zipWithM)
+import Foreign.C.Types (CInt)
+import Graphics.GD (newImage, setPixel, savePngFile, withImage, Image, Color)
+import Control.Monad (zipWithM_)
 
 imageFromRaster :: [[Color]] -> IO Image
 imageFromRaster matrix = do
     let width  = length matrix
         height = length $ head matrix
     image  <- newImage (width, height)
-    zipWithM (\row x -> 
-                 (if x `mod` (width `div` 10) == 0 then print x else return ()) >>
-                 zipWithM (\c y ->  setPixel (x, y) c image)
+    zipWithM_ (\row x -> 
+                 zipWithM_ (\c y ->  setPixel (x, y) c image)
                           row
                           [0..pred height])
              matrix
@@ -25,7 +25,7 @@ main = do
         imag = read (args !! 1) :: Double
         size = read (args !! 2) :: Int
         iter = read (args !! 3) :: Int
-        rast = map (map (fromIntegral . (* (2147483648 `div` iter))))
-                   (generate (real :+ imag) size iter)
-    image <- imageFromRaster rast
-    savePngFile "julia.png" image
+        ras  = (generate (real :+ imag) size iter)
+        ras' = map (map (fromIntegral . (* div (fromIntegral (maxBound :: CInt)) iter))) ras
+    withImage (imageFromRaster ras')
+              (savePngFile "julia.png")
