@@ -16,5 +16,5 @@ escapes !c !j !it =
                 iterate (\z -> z ^ 2 + j) c
 
 generate :: RealFloat a => Complex a -> Int -> Int -> [[Int]]
-generate !j !s !it = map genRow [0..s] `using` parList rdeepseq
+generate !j !s !it = map genRow [0..pred s] `using` parList rdeepseq
     where genRow !x = [escapes (toPoint s x :+ toPoint s y) j it | !y <- [0..s]]

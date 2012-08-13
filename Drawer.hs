@@ -10,6 +10,7 @@ imageFromRaster matrix = do
         height = length $ head matrix
     image  <- newImage (width, height)
     zipWithM (\row x -> 
+                 (if x `mod` (width `div` 10) == 0 then print x else return ()) >>
                  zipWithM (\c y ->  setPixel (x, y) c image)
                           row
                           [0..pred height])
