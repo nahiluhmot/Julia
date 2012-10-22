@@ -10,12 +10,15 @@ imageFromRaster matrix = do
     let width  = length matrix
         height = length $ head matrix
     image  <- newImage (width, height)
-    zipWithM_ (\row x -> 
-                 zipWithM_ (\c y ->  setPixel (x, y) c image)
-                          row
-                          [0..pred height])
-             matrix
-             [0..pred width]
+    zipWithM_
+        (\row x -> 
+            zipWithM_ 
+                (\c y ->
+                    setPixel (x, y) c image)
+                row
+                [0..pred height])
+        matrix
+        [0..pred width]
     return image
 
 main :: IO ()
@@ -26,6 +29,5 @@ main = do
         size = read (args !! 2) :: Int
         iter = read (args !! 3) :: Int
         ras  = (generate (real :+ imag) size iter)
-        ras' = map (map (fromIntegral . (* div (fromIntegral (maxBound :: CInt)) iter))) ras
-    withImage (imageFromRaster ras')
+    withImage (imageFromRaster (map (map fromIntegral) ras))
               (savePngFile "julia.png")
