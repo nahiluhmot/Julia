@@ -30,4 +30,5 @@ main = do
         size = read (args !! 2) :: Int
         iter = read (args !! 3) :: Int
         ras  = (generate size iter (real :+ imag) :: [[Int]]) `using` parList rdeepseq
-    imageFromRaster ras `withImage` savePngFile "julia.png"
+        ras' = map (map (fromIntegral . (* ((maxBound :: Int) `div` iter)))) ras
+    imageFromRaster ras' `withImage` savePngFile "julia.png"
