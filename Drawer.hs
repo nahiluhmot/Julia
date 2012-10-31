@@ -3,9 +3,10 @@ import System (getArgs)
 import Data.Complex (Complex((:+)))
 import Foreign.C.Types (CInt)
 import Graphics.GD (newImage, setPixel, savePngFile, withImage, Image, Color)
+import Control.Parallel.Strategies (using, parList, rdeepseq)
 import Control.Monad (zipWithM_)
 
-imageFromRaster :: [[Color]] -> IO Image
+imageFromRaster :: Integral a => [[a]] -> IO Image
 imageFromRaster matrix = do
     let width  = length matrix
         height = length $ head matrix
@@ -14,7 +15,7 @@ imageFromRaster matrix = do
         (\row x -> 
             zipWithM_ 
                 (\c y ->
-                    setPixel (x, y) c image)
+                    setPixel (x, y) (fromIntegral c) image)
                 row
                 [0..pred height])
         matrix
@@ -28,6 +29,5 @@ main = do
         imag = read (args !! 1) :: Double
         size = read (args !! 2) :: Int
         iter = read (args !! 3) :: Int
-        ras  = (generate (real :+ imag) size iter)
-    withImage (imageFromRaster (map (map fromIntegral) ras))
-              (savePngFile "julia.png")
+        ras  = (generate size iter (real :+ imag) :: [[Int]]) `using` parList rdeepseq
+    imageFromRaster ras `withImage` savePngFile "julia.png"
